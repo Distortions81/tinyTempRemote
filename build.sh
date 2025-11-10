@@ -1,9 +1,13 @@
 #!/bin/bash
 
+# Favor minimal firmware size per https://tinygo.org/docs/guides/optimizing-binaries/
 tinygo build \
 	-target=teensy36 \
 	-opt=z \
 	-panic=trap \
+	-scheduler=none \
+	-gc=leaking \
+	-size short \
 	-o firmware.hex . &&
 SIZE=$(python3 - <<'PY'
 max_end=0
