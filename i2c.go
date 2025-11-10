@@ -1,9 +1,6 @@
 package main
 
-import (
-	"fmt"
-	"machine"
-)
+import "machine"
 
 type SoftI2C struct {
 	SDA, SCL    machine.Pin
@@ -102,12 +99,12 @@ func (s *softI2CBus) Tx(addr uint16, w, r []byte) error {
 		s.bus.start()
 		if !s.bus.writeByte(byte(addr<<1) | 0) {
 			s.bus.stop()
-			return fmt.Errorf("i2c addr 0x%02X NACK on write", addr)
+			return newError("i2c addr write NACK")
 		}
 		for _, b := range w {
 			if !s.bus.writeByte(b) {
 				s.bus.stop()
-				return fmt.Errorf("i2c write NACK")
+				return newError("i2c write NACK")
 			}
 		}
 		if len(r) == 0 {
@@ -118,7 +115,7 @@ func (s *softI2CBus) Tx(addr uint16, w, r []byte) error {
 		s.bus.start()
 		if !s.bus.writeByte(byte(addr<<1) | 1) {
 			s.bus.stop()
-			return fmt.Errorf("i2c addr 0x%02X NACK on read", addr)
+			return newError("i2c addr read NACK")
 		}
 		for i := range r {
 			r[i] = s.bus.readByte(i < len(r)-1)

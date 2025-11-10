@@ -1,9 +1,10 @@
 package main
 
-import (
-	"machine"
-	"math/rand"
-)
+import "machine"
+
+type randomIntn interface {
+	Intn(n int) int
+}
 
 func blinkOnce(pin machine.Pin, durationMs int64) {
 	go func(d int64) {
@@ -18,7 +19,7 @@ type textOffset struct {
 	y int16
 }
 
-func randomOffset(r *rand.Rand, text string) textOffset {
+func randomOffset(r randomIntn, text string) textOffset {
 	width := int16(len(text) * charWidth)
 	if width > displayWidth {
 		width = displayWidth
