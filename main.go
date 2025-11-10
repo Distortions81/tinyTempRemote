@@ -131,11 +131,20 @@ func readTempC(i2c *softI2CWrapper) (float32, bool) {
 	return temp, true
 }
 
+func blinkOnce(pin machine.Pin, duration time.Duration) {
+	pin.High()
+	time.Sleep(duration)
+	pin.Low()
+}
+
 // ---- Main ----
 func main() {
 	i2c := SoftI2C{SDA: machine.D18, SCL: machine.D19}
 	i2c.Configure(100000)
 	bus := &softI2CWrapper{bus: &i2c}
+
+	led := machine.LED
+	led.Configure(machine.PinConfig{Mode: machine.PinOutput})
 
 	display := ssd1306.NewI2C(bus)
 	display.Configure(ssd1306.Config{Width: 128, Height: 32})
@@ -148,6 +157,7 @@ func main() {
 		temp, ok := readTempC(bus)
 		display.ClearDisplay()
 		if ok {
+			blinkOnce(led, 100*time.Millisecond)
 			tinyfont.WriteLine(display, &proggy.TinySZ8pt7b, 0, 16,
 				fmt.Sprintf("Temp: %.2f C", temp), white)
 		} else {
