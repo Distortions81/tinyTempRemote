@@ -11,9 +11,11 @@ const (
 	displayWidth                  = 128
 	displayHeight                 = 32
 	displayI2CAddr                = 0x3C
-	displayContrastOverride       = 0 // set 0-255 to override contrast; keep negative to use panel default
-	sensorPollDelayMs       int64 = 2000
+	displayContrastOverride       = -1 // set 0-255 to override contrast; keep negative to use panel default
+	sensorPollDelayMs       int64 = 5000
 	oledSettleDelayMs       int64 = 100
+	idleLowPowerMode              = lowPowerModeVLPS
+	idleLowPowerMinMs       int64 = 250
 )
 
 var displayResetPin machine.Pin = machine.D03

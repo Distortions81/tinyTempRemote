@@ -82,7 +82,7 @@ func main() {
 			drawNoData()
 		}
 		display.Display()
-		sleepMs(sensorPollDelayMs)
+		sleepIdle(sensorPollDelayMs)
 	}
 }
 
