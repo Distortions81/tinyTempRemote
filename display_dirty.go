@@ -17,22 +17,34 @@ var (
 )
 
 func markDirtyPixel(x, y int16) {
-	if x < 0 || x >= displayWidth || y < 0 || y >= displayHeight {
+	markDirtyRect(rect{x: x, y: y, width: 1, height: 1})
+}
+
+func markDirtyRect(area rect) {
+	if !area.valid() {
 		return
 	}
-	page := y / 8
-	dp := &oledDirtyPages[page]
-	if !dp.active {
-		dp.active = true
-		dp.minX = x
-		dp.maxX = x
-		return
-	}
-	if x < dp.minX {
-		dp.minX = x
-	}
-	if x > dp.maxX {
-		dp.maxX = x
+	x0 := clampInt16(area.x, 0, displayWidth-1)
+	x1 := clampInt16(area.x+area.width-1, x0, displayWidth-1)
+	y0 := clampInt16(area.y, 0, displayHeight-1)
+	y1 := clampInt16(area.y+area.height-1, y0, displayHeight-1)
+
+	pageStart := y0 / 8
+	pageEnd := y1 / 8
+	for page := pageStart; page <= pageEnd; page++ {
+		dp := &oledDirtyPages[page]
+		if !dp.active {
+			dp.active = true
+			dp.minX = x0
+			dp.maxX = x1
+			continue
+		}
+		if x0 < dp.minX {
+			dp.minX = x0
+		}
+		if x1 > dp.maxX {
+			dp.maxX = x1
+		}
 	}
 }
 

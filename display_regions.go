@@ -47,26 +47,38 @@ func textBoundsAt(pos textOffset, text string) rect {
 }
 
 func clearRect(display *ssd1306.Device, area rect) {
-	fillRect(display, area, false)
-}
-
-func fillRect(display *ssd1306.Device, area rect, on bool) {
 	if !area.valid() {
 		return
 	}
-	xEnd := area.x + area.width
-	yEnd := area.y + area.height
-	if xEnd > int16(displayWidth) {
-		xEnd = int16(displayWidth)
-	}
-	if yEnd > int16(displayHeight) {
-		yEnd = int16(displayHeight)
-	}
-	for y := area.y; y < yEnd; y++ {
-		for x := area.x; x < xEnd; x++ {
-			setPixel(display, x, y, on)
+
+	x0 := clampInt16(area.x, 0, displayWidth-1)
+	x1 := clampInt16(area.x+area.width-1, x0, displayWidth-1)
+	y0 := clampInt16(area.y, 0, displayHeight-1)
+	y1 := clampInt16(area.y+area.height-1, y0, displayHeight-1)
+
+	buf := display.GetBuffer()
+	width := int(displayWidth)
+	pageStart := y0 / 8
+	pageEnd := y1 / 8
+	for page := pageStart; page <= pageEnd; page++ {
+		mask := pageMaskForRange(page, y0, y1)
+		if mask == 0 {
+			continue
+		}
+		inv := ^mask
+		rowOffset := page * int16(width)
+		for x := x0; x <= x1; x++ {
+			idx := int(rowOffset) + int(x)
+			buf[idx] &= inv
 		}
 	}
+
+	markDirtyRect(rect{
+		x:      x0,
+		y:      y0,
+		width:  x1 - x0 + 1,
+		height: y1 - y0 + 1,
+	})
 }
 
 func clampInt16(v, min, max int16) int16 {
@@ -77,4 +89,17 @@ func clampInt16(v, min, max int16) int16 {
 		return max
 	}
 	return v
+}
+
+func pageMaskForRange(page, yStart, yEnd int16) byte {
+	pageBase := page * 8
+	mask := byte(0)
+	for bit := int16(0); bit < 8; bit++ {
+		y := pageBase + bit
+		if y < yStart || y > yEnd {
+			continue
+		}
+		mask |= 1 << uint(bit)
+	}
+	return mask
 }
