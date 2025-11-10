@@ -8,7 +8,8 @@ import (
 
 func main() {
 	bitBang := &SoftI2C{SDA: machine.D18, SCL: machine.D19}
-	bitBang.Configure(400000)
+	bitBang.Configure(i2cBitBangFreqHz)
+
 	i2c := &softI2CBus{bus: bitBang}
 
 	led := machine.LED
@@ -35,7 +36,16 @@ func main() {
 	display := ssd1306.NewI2C(i2c)
 
 	sleepMs(oledSettleDelayMs) // let the OLED power rails settle before init
-	display.Configure(ssd1306.Config{Width: displayWidth, Height: displayHeight, Address: 0x3C})
+	display.Configure(ssd1306.Config{
+		Width:   displayWidth,
+		Height:  displayHeight,
+		Address: displayI2CAddr,
+	})
+	contrastOverride := displayContrastOverride
+	if contrastOverride >= 0 {
+		display.Command(ssd1306.SETCONTRAST)
+		display.Command(uint8(contrastOverride))
+	}
 	display.ClearDisplay()
 
 	rng := newTinyRNG(seedEntropy())
@@ -50,7 +60,7 @@ func main() {
 		display.ClearBuffer()
 
 		if sensor != nil {
-			tempC, tempErr := sensor.ReadTemperature()
+			tempC, tempErr := readSensorTemperature(sensor)
 			if tempErr == nil {
 				tempF := tempC*9/5 + 32
 
