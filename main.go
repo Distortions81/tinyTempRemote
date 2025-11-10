@@ -14,7 +14,7 @@ import (
 
 func main() {
 	bitBang := &SoftI2C{SDA: machine.D18, SCL: machine.D19}
-	bitBang.Configure(100000)
+	bitBang.Configure(400000)
 	i2c := &softI2CBus{bus: bitBang}
 
 	sensor, err := newSensor(i2c)
