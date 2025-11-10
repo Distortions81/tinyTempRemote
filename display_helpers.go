@@ -1,17 +1,18 @@
 package main
 
-import "machine"
+import (
+	"machine"
+	"time"
+)
 
 type randomIntn interface {
 	Intn(n int) int
 }
 
 func blinkOnce(pin machine.Pin, durationMs int64) {
-	go func(d int64) {
-		pin.High()
-		sleepMs(d)
-		pin.Low()
-	}(durationMs)
+	pin.High()
+	time.Sleep(time.Duration(durationMs) * time.Millisecond)
+	pin.Low()
 }
 
 type textOffset struct {
@@ -20,7 +21,7 @@ type textOffset struct {
 }
 
 func randomOffset(r randomIntn, text string) textOffset {
-	width := int16(len(text) * charWidth)
+	width := textPixelWidth(text)
 	if width > displayWidth {
 		width = displayWidth
 	}
@@ -45,7 +46,7 @@ func randomOffset(r randomIntn, text string) textOffset {
 }
 
 func clampOffsetX(offset textOffset, text string) textOffset {
-	width := int16(len(text) * charWidth)
+	width := textPixelWidth(text)
 	if width > displayWidth {
 		width = displayWidth
 	}
@@ -57,6 +58,13 @@ func clampOffsetX(offset textOffset, text string) textOffset {
 		offset.x = maxX
 	}
 	return offset
+}
+
+func blinkError(pin machine.Pin) {
+	for i := 0; i < 3; i++ {
+		blinkOnce(pin, 75)
+		sleepMs(75)
+	}
 }
 
 func resetDisplay(pin machine.Pin) {

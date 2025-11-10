@@ -9,10 +9,10 @@ func newSensor(bus drivers.I2C) (*mcp9808.Device, bool) {
 	sensor := mcp9808.New(bus)
 	sensor.Address = mcp9808Addr
 	if !sensor.Connected() {
-		return nil, true
+		return nil, false
 	}
 	if err := sensor.SetResolution(mcp9808.Maximum); err != nil {
-		return nil, true
+		return nil, false
 	}
-	return &sensor, false
+	return &sensor, true
 }

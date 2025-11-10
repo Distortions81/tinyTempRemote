@@ -1,12 +1,9 @@
 package main
 
 import (
-	"image/color"
 	"machine"
 
 	"tinygo.org/x/drivers/ssd1306"
-	"tinygo.org/x/tinyfont"
-	"tinygo.org/x/tinyfont/freesans"
 )
 
 func main() {
@@ -14,37 +11,39 @@ func main() {
 	bitBang.Configure(400000)
 	i2c := &softI2CBus{bus: bitBang}
 
-	sensor, err := newSensor(i2c)
-	if err {
+	led := machine.LED
+	led.Configure(machine.PinConfig{Mode: machine.PinOutput})
+
+	sensor, ok := newSensor(i2c)
+	if !ok {
 		sensor = nil
+		blinkError(led)
 	}
 
 	reinitSensor := func() {
-		if newSensorInstance, sensorErr := newSensor(i2c); !sensorErr {
+		if newSensorInstance, ok := newSensor(i2c); ok {
 			sensor = newSensorInstance
+			led.Low()
 		} else {
 			sensor = nil
+			blinkError(led)
 		}
 	}
-
-	led := machine.LED
-	led.Configure(machine.PinConfig{Mode: machine.PinOutput})
 
 	resetDisplay(displayResetPin)
 
 	display := ssd1306.NewI2C(i2c)
 
-	sleepMs(settleDelayMs) // let the OLED power rails settle before init
+	sleepMs(oledSettleDelayMs) // let the OLED power rails settle before init
 	display.Configure(ssd1306.Config{Width: displayWidth, Height: displayHeight, Address: 0x3C})
 	display.ClearDisplay()
 
-	white := color.RGBA{255, 255, 255, 255}
 	rng := newTinyRNG(seedEntropy())
 	textPos := randomOffset(rng, "00.0 F")
 	lastOffsetMs := millis()
 
 	drawNoData := func() {
-		tinyfont.WriteLine(display, &freesans.Regular12pt7b, 16, 20, "NO DATA", white)
+		drawText(display, 16, 20, "F0")
 	}
 
 	for {
@@ -62,8 +61,9 @@ func main() {
 					lastOffsetMs = nowMs
 				}
 				textPos = clampOffsetX(textPos, tempText)
-				tinyfont.WriteLine(display, &freesans.Regular12pt7b, textPos.x, textPos.y, tempText, white)
+				drawText(display, textPos.x, textPos.y, tempText)
 			} else {
+				blinkError(led)
 				reinitSensor()
 				drawNoData()
 			}
