@@ -3,12 +3,11 @@ package main
 import (
 	"fmt"
 	"machine"
-	"time"
 )
 
 type SoftI2C struct {
-	SDA, SCL machine.Pin
-	delay    time.Duration
+	SDA, SCL    machine.Pin
+	delayMicros int64
 }
 
 func (i2c *SoftI2C) Configure(freqHz int) {
@@ -16,10 +15,18 @@ func (i2c *SoftI2C) Configure(freqHz int) {
 	i2c.SCL.Configure(machine.PinConfig{Mode: machine.PinOutputOpenDrain})
 	i2c.SDA.High()
 	i2c.SCL.High()
-	i2c.delay = time.Second / time.Duration(freqHz*2)
+	denom := int64(freqHz) * 2
+	if denom <= 0 {
+		denom = 1
+	}
+	halfPeriod := int64(1_000_000) / denom
+	if halfPeriod <= 0 {
+		halfPeriod = 1
+	}
+	i2c.delayMicros = halfPeriod
 }
 
-func (i2c *SoftI2C) tick() { time.Sleep(i2c.delay) }
+func (i2c *SoftI2C) tick() { sleepMicros(i2c.delayMicros) }
 
 func (i2c *SoftI2C) start() {
 	i2c.SDA.High()

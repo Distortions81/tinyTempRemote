@@ -3,13 +3,14 @@ package main
 import (
 	"machine"
 	"math/rand"
-	"time"
 )
 
-func blinkOnce(pin machine.Pin, duration time.Duration) {
-	pin.High()
-	time.Sleep(duration)
-	pin.Low()
+func blinkOnce(pin machine.Pin, durationMs int64) {
+	go func(d int64) {
+		pin.High()
+		sleepMs(d)
+		pin.Low()
+	}(durationMs)
 }
 
 type textOffset struct {
@@ -63,10 +64,10 @@ func resetDisplay(pin machine.Pin) {
 	}
 
 	pin.Configure(machine.PinConfig{Mode: machine.PinOutput})
-	time.Sleep(100 * time.Millisecond)
+	sleepMs(100)
 	pin.High()
-	time.Sleep(100 * time.Millisecond)
+	sleepMs(100)
 	pin.Low()
-	time.Sleep(100 * time.Millisecond)
+	sleepMs(100)
 	pin.High()
 }

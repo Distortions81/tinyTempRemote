@@ -1,11 +1,10 @@
 package main
 
 import (
-	"fmt"
 	"image/color"
 	"machine"
 	"math/rand"
-	"time"
+	"strconv"
 
 	"tinygo.org/x/drivers/ssd1306"
 	"tinygo.org/x/tinyfont"
@@ -19,7 +18,15 @@ func main() {
 
 	sensor, err := newSensor(i2c)
 	if err != nil {
-		panic(err)
+		sensor = nil
+	}
+
+	reinitSensor := func(reason string) {
+		if newSensorInstance, sensorErr := newSensor(i2c); sensorErr == nil {
+			sensor = newSensorInstance
+		} else {
+			sensor = nil
+		}
 	}
 
 	led := machine.LED
@@ -28,38 +35,48 @@ func main() {
 	resetDisplay(displayResetPin)
 
 	display := ssd1306.NewI2C(i2c)
-	time.Sleep(100 * time.Millisecond) // let the OLED power rails settle before init
+	sleepMs(oledSettleDelayMs) // let the OLED power rails settle before init
 	display.Configure(ssd1306.Config{Width: displayWidth, Height: displayHeight, Address: 0x3C})
 	display.ClearDisplay()
 
 	white := color.RGBA{255, 255, 255, 255}
-	rng := rand.New(rand.NewSource(time.Now().UnixNano()))
+	seed := millis()
+	if seed == 0 {
+		seed = int64(machine.CPUFrequency())
+	}
+	rng := rand.New(rand.NewSource(seed))
 	textPos := randomOffset(rng, "0.00 F")
-	lastOffset := time.Now()
+	lastOffsetMs := millis()
+
+	drawNoData := func() {
+		tinyfont.WriteLine(display, &proggy.TinySZ8pt7b, 24, 16, "NO DATA", white)
+	}
 
 	for {
-		temp, tempErr := sensor.ReadTemperature()
-		tempF := temp*9/5 + 32
-
 		display.ClearBuffer()
-		if tempErr == nil {
-			if enableBlink {
-				blinkOnce(led, 100*time.Millisecond)
-			}
 
-			tempText := fmt.Sprintf("%.2f F", tempF)
-			now := time.Now()
-			if now.Sub(lastOffset) >= offsetInterval {
-				textPos = randomOffset(rng, tempText)
-				lastOffset = now
+		if sensor != nil {
+			tempC, tempErr := sensor.ReadTemperature()
+			if tempErr == nil {
+				tempF := tempC*9/5 + 32
+
+				tempText := strconv.FormatFloat(float64(tempF), 'f', 1, 32) + " F"
+				nowMs := millis()
+				if nowMs-lastOffsetMs >= offsetIntervalMs {
+					textPos = randomOffset(rng, tempText)
+					lastOffsetMs = nowMs
+				}
+				textPos = clampOffsetX(textPos, tempText)
+				tinyfont.WriteLine(display, &proggy.TinySZ8pt7b, textPos.x, textPos.y, tempText, white)
+			} else {
+				reinitSensor("read failure")
+				drawNoData()
 			}
-			textPos = clampOffsetX(textPos, tempText)
-			tinyfont.WriteLine(display, &proggy.TinySZ8pt7b, textPos.x, textPos.y, tempText, white)
 		} else {
-			tinyfont.WriteLine(display, &proggy.TinySZ8pt7b, 0, 16,
-				"Sensor NACK", white)
+			reinitSensor("not initialized")
+			drawNoData()
 		}
 		display.Display()
-		time.Sleep(2 * time.Second)
+		sleepMs(sensorPollDelayMs)
 	}
 }
