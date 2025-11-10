@@ -5,8 +5,8 @@ import "machine"
 const (
 	mcp9808Addr             = 0x18
 	enableBlink             = false
-	charWidth               = 6
-	charHeight              = 8
+	charWidth               = 12
+	charHeight              = 18
 	offsetIntervalMs  int64 = 10_000
 	displayWidth            = 128
 	displayHeight           = 32

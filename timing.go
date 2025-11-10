@@ -14,7 +14,15 @@ func sleepMicros(us int64) {
 	if us <= 0 {
 		return
 	}
-	runtimeSleepTicks(us)
+	deadline := runtimeTicks() + us
+	for {
+		now := runtimeTicks()
+		remaining := deadline - now
+		if remaining <= 0 {
+			return
+		}
+		runtimeSleepTicks(remaining)
+	}
 }
 
 func sleepMs(ms int64) {

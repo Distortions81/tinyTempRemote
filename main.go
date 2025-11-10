@@ -8,7 +8,7 @@ import (
 
 	"tinygo.org/x/drivers/ssd1306"
 	"tinygo.org/x/tinyfont"
-	"tinygo.org/x/tinyfont/proggy"
+	"tinygo.org/x/tinyfont/freesans"
 )
 
 func main() {
@@ -45,11 +45,11 @@ func main() {
 		seed = int64(machine.CPUFrequency())
 	}
 	rng := rand.New(rand.NewSource(seed))
-	textPos := randomOffset(rng, "0.00 F")
+	textPos := randomOffset(rng, "00.0 F")
 	lastOffsetMs := millis()
 
 	drawNoData := func() {
-		tinyfont.WriteLine(display, &proggy.TinySZ8pt7b, 24, 16, "NO DATA", white)
+		tinyfont.WriteLine(display, &freesans.Regular12pt7b, 16, 20, "NO DATA", white)
 	}
 
 	for {
@@ -67,7 +67,7 @@ func main() {
 					lastOffsetMs = nowMs
 				}
 				textPos = clampOffsetX(textPos, tempText)
-				tinyfont.WriteLine(display, &proggy.TinySZ8pt7b, textPos.x, textPos.y, tempText, white)
+				tinyfont.WriteLine(display, &freesans.Regular12pt7b, textPos.x, textPos.y, tempText, white)
 			} else {
 				reinitSensor("read failure")
 				drawNoData()
