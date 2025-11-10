@@ -5,14 +5,14 @@ import (
 	"tinygo.org/x/drivers/mcp9808"
 )
 
-func newSensor(bus drivers.I2C) (*mcp9808.Device, error) {
+func newSensor(bus drivers.I2C) (*mcp9808.Device, bool) {
 	sensor := mcp9808.New(bus)
 	sensor.Address = mcp9808Addr
 	if !sensor.Connected() {
-		return nil, newError("mcp9808 not detected")
+		return nil, true
 	}
 	if err := sensor.SetResolution(mcp9808.Maximum); err != nil {
-		return nil, err
+		return nil, true
 	}
-	return &sensor, nil
+	return &sensor, false
 }

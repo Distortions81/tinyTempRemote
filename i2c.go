@@ -99,12 +99,12 @@ func (s *softI2CBus) Tx(addr uint16, w, r []byte) error {
 		s.bus.start()
 		if !s.bus.writeByte(byte(addr<<1) | 0) {
 			s.bus.stop()
-			return newError("i2c addr write NACK")
+			return newError("t")
 		}
 		for _, b := range w {
 			if !s.bus.writeByte(b) {
 				s.bus.stop()
-				return newError("i2c write NACK")
+				return newError("t")
 			}
 		}
 		if len(r) == 0 {
@@ -115,7 +115,7 @@ func (s *softI2CBus) Tx(addr uint16, w, r []byte) error {
 		s.bus.start()
 		if !s.bus.writeByte(byte(addr<<1) | 1) {
 			s.bus.stop()
-			return newError("i2c addr read NACK")
+			return newError("t")
 		}
 		for i := range r {
 			r[i] = s.bus.readByte(i < len(r)-1)

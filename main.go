@@ -15,12 +15,12 @@ func main() {
 	i2c := &softI2CBus{bus: bitBang}
 
 	sensor, err := newSensor(i2c)
-	if err != nil {
+	if err {
 		sensor = nil
 	}
 
-	reinitSensor := func(reason string) {
-		if newSensorInstance, sensorErr := newSensor(i2c); sensorErr == nil {
+	reinitSensor := func() {
+		if newSensorInstance, sensorErr := newSensor(i2c); !sensorErr {
 			sensor = newSensorInstance
 		} else {
 			sensor = nil
@@ -64,11 +64,11 @@ func main() {
 				textPos = clampOffsetX(textPos, tempText)
 				tinyfont.WriteLine(display, &freesans.Regular12pt7b, textPos.x, textPos.y, tempText, white)
 			} else {
-				reinitSensor("read failure")
+				reinitSensor()
 				drawNoData()
 			}
 		} else {
-			reinitSensor("not initialized")
+			reinitSensor()
 			drawNoData()
 		}
 		display.Display()
