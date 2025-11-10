@@ -51,41 +51,52 @@ func main() {
 	rng := newTinyRNG(seedEntropy())
 	textPos := randomOffset(rng, "00.0 F")
 	lastOffsetMs := millis()
-
-	drawNoData := func() {
-		drawText(display, 16, 20, "F0")
-	}
+	lastBounds := rect{}
+	noDataPos := textOffset{x: 16, y: 20}
+	const noDataText = "F0"
 
 	for {
-		display.ClearBuffer()
-
+		var (
+			tempText string
+			drawPos  textOffset
+		)
 		if sensor != nil {
 			tempC, tempErr := readSensorTemperature(sensor)
 			if tempErr == nil {
 				tempF := tempC*9/5 + 32
 
-				tempText := formatTemp(tempF)
+				tempText = formatTemp(tempF)
 				nowMs := millis()
 				if nowMs-lastOffsetMs >= offsetIntervalMs {
 					textPos = randomOffset(rng, tempText)
 					lastOffsetMs = nowMs
 				}
 				textPos = clampOffsetX(textPos, tempText)
-				drawText(display, textPos.x, textPos.y, tempText)
+				drawPos = textPos
 			} else {
 				blinkError(led)
 				reinitSensor()
-				drawNoData()
 			}
-		} else {
-			reinitSensor()
-			drawNoData()
 		}
-		display.Display()
+		if tempText == "" {
+			drawPos = noDataPos
+			tempText = noDataText
+		}
+
+		currentBounds := textBoundsAt(drawPos, tempText)
+		if lastBounds.valid() {
+			clearRect(display, lastBounds)
+		}
+		if currentBounds.valid() {
+			drawText(display, drawPos.x, drawPos.y, tempText)
+			lastBounds = currentBounds
+		} else {
+			lastBounds = rect{}
+		}
+		flushDirtyPages(display, i2c)
 		sleepIdle(sensorPollDelayMs)
 	}
 }
-
 func formatTemp(temp float64) string {
 	scaledValue := temp * 10
 	negative := scaledValue < 0

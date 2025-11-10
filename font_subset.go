@@ -140,4 +140,5 @@ func setPixel(display *ssd1306.Device, x, y int16, on bool) {
 	} else {
 		buf[index] &^= mask
 	}
+	markDirtyPixel(x, y)
 }
