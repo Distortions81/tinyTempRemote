@@ -52,6 +52,7 @@ func main() {
 	textPos := randomOffset(rng, "00.0 F")
 	lastOffsetMs := millis()
 	lastBounds := rect{}
+	lastText := ""
 	noDataPos := textOffset{x: 16, y: 20}
 	const noDataText = "F0"
 
@@ -84,14 +85,23 @@ func main() {
 		}
 
 		currentBounds := textBoundsAt(drawPos, tempText)
+		sameTextSamePos := tempText == lastText && rectEqual(currentBounds, lastBounds)
 		if lastBounds.valid() {
-			clearRect(display, lastBounds)
+			if sameTextSamePos && currentBounds.valid() {
+				for _, region := range subtractRect(lastBounds, currentBounds) {
+					clearRect(display, region)
+				}
+			} else {
+				clearRect(display, lastBounds)
+			}
 		}
 		if currentBounds.valid() {
 			drawText(display, drawPos.x, drawPos.y, tempText)
 			lastBounds = currentBounds
+			lastText = tempText
 		} else {
 			lastBounds = rect{}
+			lastText = ""
 		}
 		flushDirtyPages(display, i2c)
 		sleepIdle(sensorPollDelayMs)
