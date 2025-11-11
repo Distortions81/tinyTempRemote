@@ -14,6 +14,7 @@ func init() {
 		nxp.SMC.SetPMPROT_AVLP(1)
 	}
 	disableUSBClock()
+	forceLowSpeedClock()
 }
 
 func disableUSBClock() {
