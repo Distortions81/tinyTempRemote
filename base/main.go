@@ -50,16 +50,16 @@ func main() {
 	var lastTelemetryMs int64
 	hasTelemetry := false
 
-	for {
-		now := millis()
+		for {
+			now := millis()
 
 			for xbee != nil {
 				line, ok := xbee.PollLine()
 				if !ok {
 					break
 				}
-				tempF, _, valid := parseTelemetryLine(line)
-				if !valid || len(tempF) == 0 {
+				tempC, valid := parseTelemetryLine(line)
+				if !valid {
 					if len(line) > 0 {
 						hasTelemetry = true
 						displayText = "FF"
@@ -71,10 +71,13 @@ func main() {
 					}
 					continue
 				}
+
+				tempF := tempC*9/5 + 32
+				tempText := formatTemp(tempF)
 				if !hasTelemetry {
-					textPos = randomOffset(rng, tempF)
+					textPos = randomOffset(rng, tempText)
 				}
-				displayText = tempF
+				displayText = tempText
 				hasTelemetry = true
 				lastTelemetryMs = millis()
 				jiggleCounter = 0
@@ -143,4 +146,60 @@ func seedEntropy() uint32 {
 		seed = machine.CPUFrequency()
 	}
 	return seed
+}
+
+func formatTemp(temp float64) string {
+	return formatTempWithUnit(temp, 'F')
+}
+
+func formatTempWithUnit(temp float64, unit byte) string {
+	return buildTempString(temp, unit)
+}
+
+func formatTempValue(temp float64) string {
+	return buildTempString(temp, 0)
+}
+
+func buildTempString(temp float64, unit byte) string {
+	scaledValue := temp * 10
+	negative := scaledValue < 0
+	if negative {
+		scaledValue = -scaledValue
+	}
+	scaled := int32(scaledValue + 0.5)
+
+	whole := scaled / 10
+	frac := scaled % 10
+
+	var buf [18]byte
+	pos := len(buf)
+
+	if unit != 0 {
+		pos--
+		buf[pos] = unit
+		pos--
+		buf[pos] = ' '
+	}
+	pos--
+	buf[pos] = byte('0' + frac)
+	pos--
+	buf[pos] = '.'
+
+	if whole == 0 {
+		pos--
+		buf[pos] = '0'
+	} else {
+		for whole > 0 {
+			pos--
+			buf[pos] = byte('0' + whole%10)
+			whole /= 10
+		}
+	}
+
+	if negative {
+		pos--
+		buf[pos] = '-'
+	}
+
+	return string(buf[pos:])
 }

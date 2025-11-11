@@ -57,14 +57,14 @@ func (x *xbeeRadio) PollLine() (string, bool) {
 		}
 		activity = true
 		switch b {
-		case '\n':
+		case ';':
 			if x.lineLen == 0 {
 				continue
 			}
 			line := string(x.lineBuf[:x.lineLen])
 			x.lineLen = 0
 			return line, true
-		case '\r':
+		case '\r', '\n':
 			continue
 		default:
 			if x.lineLen >= len(x.lineBuf) {

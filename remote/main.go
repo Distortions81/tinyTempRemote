@@ -89,7 +89,7 @@ func main() {
 				tempF := testTxTempC*9/5 + 32
 				tempText = formatTemp(tempF)
 				if xbee != nil {
-					xbee.SendTelemetry(testTxTempC, tempText)
+					xbee.SendTelemetry(testTxTempC)
 					if xbeeBlinkLEDOnTx && xbeeBlinkDurationMs > 0 {
 						blinkOnce(led, xbeeBlinkDurationMs)
 					}
@@ -107,7 +107,7 @@ func main() {
 
 				tempText = formatTemp(tempF)
 				if xbee != nil {
-					xbee.SendTelemetry(tempC, tempText)
+					xbee.SendTelemetry(tempC)
 					if xbeeBlinkLEDOnTx && xbeeBlinkDurationMs > 0 {
 						blinkOnce(led, xbeeBlinkDurationMs)
 					}
@@ -168,6 +168,14 @@ func formatTemp(temp float64) string {
 }
 
 func formatTempWithUnit(temp float64, unit byte) string {
+	return buildTempString(temp, unit)
+}
+
+func formatTempValue(temp float64) string {
+	return buildTempString(temp, 0)
+}
+
+func buildTempString(temp float64, unit byte) string {
 	scaledValue := temp * 10
 	negative := scaledValue < 0
 	if negative {
@@ -178,13 +186,15 @@ func formatTempWithUnit(temp float64, unit byte) string {
 	whole := scaled / 10
 	frac := scaled % 10
 
-	var buf [16]byte
+	var buf [18]byte
 	pos := len(buf)
 
-	pos--
-	buf[pos] = unit
-	pos--
-	buf[pos] = ' '
+	if unit != 0 {
+		pos--
+		buf[pos] = unit
+		pos--
+		buf[pos] = ' '
+	}
 	pos--
 	buf[pos] = byte('0' + frac)
 	pos--

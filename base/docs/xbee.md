@@ -28,10 +28,10 @@ Move the module to another UART or change the baud rate by editing those values 
 Each successful temperature sample is emitted as:
 
 ```
-TEMP,<Fahrenheit>,<Celsius>\r\n
+TEMP,<Celsius>;
 ```
 
-Example: `TEMP,72.4 F,22.5 C`. You can also call `SendTextLine("debug...")` from within the firmware to push ad-hoc diagnostics through the same link.
+Records terminate with `;` (no newline). The base firmware converts the transmitted Celsius value to Fahrenheit before drawing it, so the OLED still shows the familiar `xx.x F` string. Example payload: `TEMP,22.5;`. You can also call `SendTextLine("debug...")` from within the firmware to push ad-hoc diagnostics through the same link.
 
 ## Commissioning checklist
 1. Program both radios with matching PAN ID, channel, and destination addresses using Digi’s XCTU or AT commands (transparent mode is assumed).

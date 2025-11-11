@@ -42,13 +42,13 @@ func newXBeeRadio() *xbeeRadio {
 	return &xbeeRadio{uart: xbeeUART}
 }
 
-func (x *xbeeRadio) SendTelemetry(tempC float64, tempFText string) {
+func (x *xbeeRadio) SendTelemetry(tempC float64) {
 	if x == nil {
 		return
 	}
 
-	tempCText := formatTempWithUnit(tempC, 'C')
-	x.sendRecord(tempFText, tempCText)
+	tempCText := formatTempValue(tempC)
+	x.sendRecord(tempCText)
 }
 
 func (x *xbeeRadio) SendTextLine(line string) {
@@ -56,19 +56,14 @@ func (x *xbeeRadio) SendTextLine(line string) {
 		return
 	}
 	x.writeAll([]byte(line))
-	x.writeAll([]byte("\r\n"))
+	x.writeAll([]byte(";"))
 }
 
-func (x *xbeeRadio) sendRecord(tempFText, tempCText string) {
+func (x *xbeeRadio) sendRecord(tempCText string) {
 	var buf [96]byte
 	idx := copy(buf[:], "TEMP,")
-	idx += copyAndClamp(buf[idx:], tempFText)
-	buf[idx] = ','
-	idx++
 	idx += copyAndClamp(buf[idx:], tempCText)
-	buf[idx] = '\r'
-	idx++
-	buf[idx] = '\n'
+	buf[idx] = ';'
 	idx++
 	x.writeAll(buf[:idx])
 }

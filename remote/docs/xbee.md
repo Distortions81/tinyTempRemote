@@ -41,10 +41,10 @@ Flip `enableOLED` to `false` to keep the MCP9808/XBee running but skip the SSD13
 Each successful temperature sample is emitted as:
 
 ```
-TEMP,<Fahrenheit>,<Celsius>\r\n
+TEMP,<Celsius>;
 ```
 
-Example: `TEMP,72.4 F,22.5 C`. You can also call `SendTextLine("debug...")` from within the firmware to push ad-hoc diagnostics through the same link.
+Only the Celsius reading (one decimal place) is transmitted; the base station converts to Fahrenheit for display. The trailing semicolon is the record terminator (no CR/LF). Example: `TEMP,22.5;`. You can also call `SendTextLine("debug...")` from within the firmware to push ad-hoc diagnostics through the same link.
 
 ## Commissioning checklist
 1. Program both radios with matching PAN ID, channel, and destination addresses using Digi’s XCTU or AT commands (transparent mode is assumed).
