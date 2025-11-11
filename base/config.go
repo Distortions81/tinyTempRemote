@@ -20,7 +20,6 @@ const (
 	xbeeBaudRate                  = 9600
 	xbeeResetPulseMs        int64 = 5
 	xbeeBootDelayMs         int64 = 50
-	xbeeBlinkLEDOnRx              = true
 	xbeeBlinkDurationMs     int64 = 100
 	xbeeLineMaxLen                = 96
 )

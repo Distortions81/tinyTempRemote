@@ -60,17 +60,17 @@ func main() {
 				}
 				tempC, valid := parseTelemetryLine(line)
 				if !valid {
-					if len(line) > 0 {
-						hasTelemetry = true
-						displayText = "FF"
-						lastTelemetryMs = millis()
-						textPos = clampOffsetX(textPos, displayText)
-						if xbeeBlinkLEDOnRx && xbeeBlinkDurationMs > 0 {
-							blinkOnce(led, xbeeBlinkDurationMs)
+						if len(line) > 0 {
+							hasTelemetry = true
+							displayText = "FF"
+							lastTelemetryMs = millis()
+							textPos = clampOffsetX(textPos, displayText)
+							if xbeeBlinkDurationMs > 0 {
+								blinkOnce(led, xbeeBlinkDurationMs)
+							}
 						}
+						continue
 					}
-					continue
-				}
 
 				tempF := tempC*9/5 + 32
 				tempText := formatTemp(tempF)
@@ -82,7 +82,7 @@ func main() {
 				lastTelemetryMs = millis()
 				jiggleCounter = 0
 				textPos = clampOffsetX(textPos, displayText)
-				if xbeeBlinkLEDOnRx && xbeeBlinkDurationMs > 0 {
+				if xbeeBlinkDurationMs > 0 {
 					blinkOnce(led, xbeeBlinkDurationMs)
 				}
 			}
