@@ -23,7 +23,7 @@ const (
 	xbeeBlinkLEDOnTx              = true
 	xbeeBlinkDurationMs     int64 = 100
 	enableOLED                    = false
-	testTxModeEnabled             = true
+	testTxModeEnabled             = false
 	testTxIntervalMs        int64 = 1000
 	testTxStartTempC              = 20.0
 	testTxMaxTempC                = 30.0
