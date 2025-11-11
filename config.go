@@ -21,7 +21,7 @@ const (
 	xbeeResetPulseMs        int64 = 5
 	xbeeBootDelayMs         int64 = 50
 	xbeeBlinkLEDOnTx              = true
-	xbeeBlinkDurationMs     int64 = 15
+	xbeeBlinkDurationMs     int64 = 100
 )
 
 var (
