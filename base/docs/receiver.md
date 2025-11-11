@@ -13,7 +13,7 @@ All logic is 3.3 V, so no level shifting is needed when pairing with an XBee.
 ## Firmware notes
 - Build/flash with `cd base && ./build.sh` (requires TinyGo + `teensy_loader_cli`).
 - `config.go` exposes `telemetryIdleDelayMs`, `telemetryStaleTimeoutMs`, and the UART pinout if you need to tune responsiveness or move to a different serial port.
-- Every valid `TEMP,<Fahrenheit>,<Celsius>` line received over UART updates the OLED and briefly blinks the onboard LED (disable via `xbeeBlinkLEDOnRx`).
-- If no fresh telemetry arrives within 20 s the display falls back to `F0` at a fixed position so you can tell the link is stale.
+- On boot and before the first packet arrives the OLED shows `00`, then each valid `TEMP,<Fahrenheit>,<Celsius>` line updates the display and briefly blinks the onboard LED (disable via `xbeeBlinkLEDOnRx`).
+- If no fresh telemetry arrives within 20 s the display falls back to `FF` at a fixed position so you can tell the link is stale.
 
 Because the OLED font only contains digits, `.` and `F`, the receiver shows the Fahrenheit string exactly as transmitted. Change the remote formatter if you need additional units or text on the base display.

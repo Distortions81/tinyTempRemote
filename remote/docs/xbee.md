@@ -24,6 +24,19 @@ const xbeeBlinkDurationMs int64 = 15
 ```
 Move the module to another UART or change the baud rate by editing those values and rebuilding. Set `xbeeBlinkLEDOnTx` to `false` if you don’t want the Teensy’s LED to blink briefly on every transmission; adjust `xbeeBlinkDurationMs` for longer or shorter pulses.
 
+Disable the OLED when you only need a headless transmitter by toggling `enableOLED`.
+```go
+const (
+	enableOLED = true
+	testTxModeEnabled = false
+	testTxIntervalMs = 1000
+	testTxStartTempC = 20.0
+	testTxMaxTempC = 30.0
+	testTxStepTempC = 0.5
+)
+```
+Flip `enableOLED` to `false` to keep the MCP9808/XBee running but skip the SSD1306 for lower power. Turn on `testTxModeEnabled` if you want the radio to emit a rolling Celsius value (between `testTxStartTempC` and `testTxMaxTempC`) once per second for link testing when the sensor is absent; it still blinks the LED each packet like the normal path.
+
 ## Data format
 Each successful temperature sample is emitted as:
 

@@ -35,9 +35,12 @@ func main() {
 	xbee := newXBeeRadio()
 
 	rng := newTinyRNG(seedEntropy())
-	const noDataText = "F0"
+	const (
+		noDataText  = "FF"
+		initialText = "00"
+	)
 	noDataPos := textOffset{x: 16, y: 20}
-	displayText := noDataText
+	displayText := initialText
 	textPos := randomOffset(rng, displayText)
 	lastOffsetMs := millis()
 	lastBounds := rect{}

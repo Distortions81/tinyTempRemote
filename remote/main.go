@@ -31,93 +31,136 @@ func main() {
 		}
 	}
 
-	resetDisplay(displayResetPin)
+	var (
+		display       *ssd1306.Device
+		rng           *tinyRNG
+		textPos       textOffset
+		lastOffsetMs  int64
+		lastBounds    rect
+		lastText      string
+		lastDrawPos   textOffset
+		noDataPos     textOffset
+		constNoData   = "F0"
+		constFiller   = "00.0 F"
+		jiggleCounter = 0
+	)
 
-	display := ssd1306.NewI2C(i2c)
+	if enableOLED {
+		resetDisplay(displayResetPin)
+		display = ssd1306.NewI2C(i2c)
 
-	sleepMs(oledSettleDelayMs) // let the OLED power rails settle before init
-	display.Configure(ssd1306.Config{
-		Width:   displayWidth,
-		Height:  displayHeight,
-		Address: displayI2CAddr,
-	})
-	contrastOverride := displayContrastOverride
-	if contrastOverride >= 0 {
-		display.Command(ssd1306.SETCONTRAST)
-		display.Command(uint8(contrastOverride))
+		sleepMs(oledSettleDelayMs) // let the OLED power rails settle before init
+		display.Configure(ssd1306.Config{
+			Width:   displayWidth,
+			Height:  displayHeight,
+			Address: displayI2CAddr,
+		})
+		contrastOverride := displayContrastOverride
+		if contrastOverride >= 0 {
+			display.Command(ssd1306.SETCONTRAST)
+			display.Command(uint8(contrastOverride))
+		}
+		display.ClearDisplay()
+
+		rng = newTinyRNG(seedEntropy())
+		textPos = randomOffset(rng, constFiller)
+		lastOffsetMs = millis()
+		noDataPos = textOffset{x: 16, y: 20}
 	}
-	display.ClearDisplay()
 
 	xbee := newXBeeRadio()
 
-	rng := newTinyRNG(seedEntropy())
-	textPos := randomOffset(rng, "00.0 F")
-	lastOffsetMs := millis()
-	lastBounds := rect{}
-	lastText := ""
-	lastDrawPos := textOffset{}
-	noDataPos := textOffset{x: 16, y: 20}
+	var (
+		testTxTempC  = testTxStartTempC
+		lastTestTxMs int64
+	)
+
 	const noDataText = "F0"
-	jiggleCounter := 0
 
 	for {
+		now := millis()
 		var (
 			tempText string
 			drawPos  textOffset
 		)
-		if sensor != nil {
+
+		if testTxModeEnabled {
+			if now-lastTestTxMs >= testTxIntervalMs {
+				tempF := testTxTempC*9/5 + 32
+				tempText = formatTemp(tempF)
+				if xbee != nil {
+					xbee.SendTelemetry(testTxTempC, tempText)
+					if xbeeBlinkLEDOnTx && xbeeBlinkDurationMs > 0 {
+						blinkOnce(led, xbeeBlinkDurationMs)
+					}
+				}
+				lastTestTxMs = now
+				testTxTempC += testTxStepTempC
+				if testTxTempC >= testTxMaxTempC {
+					testTxTempC = testTxStartTempC
+				}
+			}
+		} else if sensor != nil {
 			tempC, tempErr := readSensorTemperature(sensor)
 			if tempErr == nil {
 				tempF := tempC*9/5 + 32
 
 				tempText = formatTemp(tempF)
-				nowMs := millis()
-				if nowMs-lastOffsetMs >= offsetIntervalMs {
-					jiggleCounter++
-					if textJiggleStride > 0 && jiggleCounter >= textJiggleStride {
-						textPos = randomOffset(rng, tempText)
-						jiggleCounter = 0
-					}
-					lastOffsetMs = nowMs
-				}
-				textPos = clampOffsetX(textPos, tempText)
-				drawPos = textPos
 				if xbee != nil {
 					xbee.SendTelemetry(tempC, tempText)
 					if xbeeBlinkLEDOnTx && xbeeBlinkDurationMs > 0 {
 						blinkOnce(led, xbeeBlinkDurationMs)
 					}
 				}
+				if display != nil {
+					if now-lastOffsetMs >= offsetIntervalMs {
+						jiggleCounter++
+						if textJiggleStride > 0 && jiggleCounter >= textJiggleStride {
+							textPos = randomOffset(rng, tempText)
+							jiggleCounter = 0
+						}
+						lastOffsetMs = now
+					}
+					textPos = clampOffsetX(textPos, tempText)
+					drawPos = textPos
+				}
 			} else {
 				blinkError(led)
 				reinitSensor()
 			}
 		}
-		if tempText == "" {
-			drawPos = noDataPos
-			tempText = noDataText
-		}
 
-		currentBounds := textBoundsAt(drawPos, tempText)
-		if tempText == lastText && drawPos == lastDrawPos && currentBounds.valid() {
-			sleepIdle(sensorPollDelayMs)
-			continue
+		if display != nil {
+			if tempText == "" {
+				drawPos = noDataPos
+				tempText = constNoData
+			}
+
+			currentBounds := textBoundsAt(drawPos, tempText)
+			if tempText == lastText && drawPos == lastDrawPos && currentBounds.valid() {
+				sleepIdle(sensorPollDelayMs)
+				continue
+			}
+			if lastBounds.valid() {
+				clearRect(display, lastBounds)
+			}
+			if currentBounds.valid() {
+				drawText(display, drawPos.x, drawPos.y, tempText)
+				lastBounds = currentBounds
+				lastText = tempText
+				lastDrawPos = drawPos
+			} else {
+				lastBounds = rect{}
+				lastText = ""
+				lastDrawPos = textOffset{}
+			}
+			flushDirtyPages(display, i2c)
 		}
-		if lastBounds.valid() {
-			clearRect(display, lastBounds)
+		sleepDelay := sensorPollDelayMs
+		if testTxModeEnabled {
+			sleepDelay = testTxIntervalMs
 		}
-		if currentBounds.valid() {
-			drawText(display, drawPos.x, drawPos.y, tempText)
-			lastBounds = currentBounds
-			lastText = tempText
-			lastDrawPos = drawPos
-		} else {
-			lastBounds = rect{}
-			lastText = ""
-			lastDrawPos = textOffset{}
-		}
-		flushDirtyPages(display, i2c)
-		sleepIdle(sensorPollDelayMs)
+		sleepIdle(sleepDelay)
 	}
 }
 func formatTemp(temp float64) string {

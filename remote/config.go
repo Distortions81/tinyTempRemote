@@ -22,6 +22,12 @@ const (
 	xbeeBootDelayMs         int64 = 50
 	xbeeBlinkLEDOnTx              = true
 	xbeeBlinkDurationMs     int64 = 100
+	enableOLED                    = false
+	testTxModeEnabled             = true
+	testTxIntervalMs        int64 = 1000
+	testTxStartTempC              = 20.0
+	testTxMaxTempC                = 30.0
+	testTxStepTempC               = 0.5
 )
 
 var (
