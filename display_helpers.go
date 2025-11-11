@@ -79,4 +79,5 @@ func resetDisplay(pin machine.Pin) {
 	pin.Low()
 	sleepMs(100)
 	pin.High()
+	blinkOnce(machine.LED, 2)
 }
