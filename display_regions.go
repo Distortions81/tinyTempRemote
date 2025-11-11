@@ -200,11 +200,3 @@ func minInt16(a, b int16) int16 {
 	}
 	return b
 }
-
-func rectEqual(a, b rect) bool {
-	return a.x == b.x &&
-		a.y == b.y &&
-		a.width == b.width &&
-		a.height == b.height &&
-		a.valid() == b.valid()
-}

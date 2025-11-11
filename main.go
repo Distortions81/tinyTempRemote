@@ -53,8 +53,10 @@ func main() {
 	lastOffsetMs := millis()
 	lastBounds := rect{}
 	lastText := ""
+	lastDrawPos := textOffset{}
 	noDataPos := textOffset{x: 16, y: 20}
 	const noDataText = "F0"
+	jiggleCounter := 0
 
 	for {
 		var (
@@ -69,7 +71,11 @@ func main() {
 				tempText = formatTemp(tempF)
 				nowMs := millis()
 				if nowMs-lastOffsetMs >= offsetIntervalMs {
-					textPos = randomOffset(rng, tempText)
+					jiggleCounter++
+					if textJiggleStride > 0 && jiggleCounter >= textJiggleStride {
+						textPos = randomOffset(rng, tempText)
+						jiggleCounter = 0
+					}
 					lastOffsetMs = nowMs
 				}
 				textPos = clampOffsetX(textPos, tempText)
@@ -85,23 +91,29 @@ func main() {
 		}
 
 		currentBounds := textBoundsAt(drawPos, tempText)
-		sameTextSamePos := tempText == lastText && rectEqual(currentBounds, lastBounds)
+		if tempText == lastText && drawPos == lastDrawPos && currentBounds.valid() {
+			sleepIdle(sensorPollDelayMs)
+			continue
+		}
+		textChanged := tempText != lastText
 		if lastBounds.valid() {
-			if sameTextSamePos && currentBounds.valid() {
+			if textChanged {
+				clearRect(display, lastBounds)
+			} else {
 				for _, region := range subtractRect(lastBounds, currentBounds) {
 					clearRect(display, region)
 				}
-			} else {
-				clearRect(display, lastBounds)
 			}
 		}
 		if currentBounds.valid() {
 			drawText(display, drawPos.x, drawPos.y, tempText)
 			lastBounds = currentBounds
 			lastText = tempText
+			lastDrawPos = drawPos
 		} else {
 			lastBounds = rect{}
 			lastText = ""
+			lastDrawPos = textOffset{}
 		}
 		flushDirtyPages(display, i2c)
 		sleepIdle(sensorPollDelayMs)

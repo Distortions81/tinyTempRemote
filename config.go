@@ -16,6 +16,7 @@ const (
 	oledSettleDelayMs       int64 = 100
 	idleLowPowerMode              = lowPowerModeVLPS
 	idleLowPowerMinMs       int64 = 250
+	textJiggleStride              = 6
 )
 
 var displayResetPin machine.Pin = machine.D03
