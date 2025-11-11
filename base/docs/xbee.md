@@ -1,10 +1,10 @@
 # XBee Pro 900 RPSMA Integration
 
-This firmware now exposes a simple UART-backed transport so the Teensy 3.6 can stream temperature readings over a Digi XBee Pro 900 RPSMA in transparent (AT) mode. The defaults target UART1, which remains free while the OLED and MCP9808 sensor are on a soft I²C bus.
+This firmware now exposes a simple UART-backed transport so the Teensy 3.6 can stream temperature readings over a Digi XBee Pro 900 RPSMA in transparent (AT) mode. The defaults target UART1 (Teensy RX2/TX2 on D9/D10, which is the MK66F18’s UART1) so the OLED and MCP9808 sensor can stay on the soft I²C bus.
 
 ## Wiring
-- `D10` → XBee DIN (pin 3) – Teensy TX, 3.3 V logic only.
-- `D09` → XBee DOUT (pin 2) – Teensy RX, 3.3 V logic only.
+ - `D10` → XBee DIN (pin 3) – Teensy TX2 (UART2) pin, 3.3 V logic only.
+ - `D09` → XBee DOUT (pin 2) – Teensy RX2 (UART2) pin, 3.3 V logic only.
 - `3V3` → XBee VCC (pin 1). The radio can draw ~215 mA on transmit, so use the Teensy VIN header only if your supply can source it.
 - `GND` → XBee GND (pin 10).
 - Optional: assign `xbeeResetPin` to any spare GPIO to drive the module’s `RESET` pin (pin 5). Set `xbeeSleepPin` if you want to toggle `SLEEP_RQ` (pin 9) for low-power cycles.
