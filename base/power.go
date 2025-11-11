@@ -14,7 +14,7 @@ func init() {
 		nxp.SMC.SetPMPROT_AVLP(1)
 	}
 	disableUSBClock()
-	forceLowSpeedClock()
+	// keep the nominal clock speed for now instead of forcing the slow path.
 }
 
 func disableUSBClock() {

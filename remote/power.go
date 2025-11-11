@@ -12,7 +12,6 @@ func init() {
 	if idleLowPowerMode != lowPowerModeDisabled {
 		// Allow Very-Low-Power modes; this register is write-once after reset.
 		nxp.SMC.SetPMPROT_AVLP(1)
-		forceLowSpeedClock()
 	}
 	disableUSBClock()
 }
