@@ -95,15 +95,8 @@ func main() {
 			sleepIdle(sensorPollDelayMs)
 			continue
 		}
-		textChanged := tempText != lastText
 		if lastBounds.valid() {
-			if textChanged {
-				clearRect(display, lastBounds)
-			} else {
-				for _, region := range subtractRect(lastBounds, currentBounds) {
-					clearRect(display, region)
-				}
-			}
+			clearRect(display, lastBounds)
 		}
 		if currentBounds.valid() {
 			drawText(display, drawPos.x, drawPos.y, tempText)

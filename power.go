@@ -13,6 +13,11 @@ func init() {
 		// Allow Very-Low-Power modes; this register is write-once after reset.
 		nxp.SMC.SetPMPROT_AVLP(1)
 	}
+	disableUSBClock()
+}
+
+func disableUSBClock() {
+	nxp.SIM.SetSCGC4_USBOTG(0)
 }
 
 func sleepIdle(ms int64) {
