@@ -48,6 +48,8 @@ func main() {
 	}
 	display.ClearDisplay()
 
+	xbee := newXBeeRadio()
+
 	rng := newTinyRNG(seedEntropy())
 	textPos := randomOffset(rng, "00.0 F")
 	lastOffsetMs := millis()
@@ -80,6 +82,12 @@ func main() {
 				}
 				textPos = clampOffsetX(textPos, tempText)
 				drawPos = textPos
+				if xbee != nil {
+					xbee.SendTelemetry(tempC, tempText)
+					if xbeeBlinkLEDOnTx && xbeeBlinkDurationMs > 0 {
+						blinkOnce(led, xbeeBlinkDurationMs)
+					}
+				}
 			} else {
 				blinkError(led)
 				reinitSensor()
@@ -113,6 +121,10 @@ func main() {
 	}
 }
 func formatTemp(temp float64) string {
+	return formatTempWithUnit(temp, 'F')
+}
+
+func formatTempWithUnit(temp float64, unit byte) string {
 	scaledValue := temp * 10
 	negative := scaledValue < 0
 	if negative {
@@ -127,7 +139,7 @@ func formatTemp(temp float64) string {
 	pos := len(buf)
 
 	pos--
-	buf[pos] = 'F'
+	buf[pos] = unit
 	pos--
 	buf[pos] = ' '
 	pos--

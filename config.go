@@ -17,6 +17,18 @@ const (
 	idleLowPowerMode              = lowPowerModeVLPS
 	idleLowPowerMinMs       int64 = 250
 	textJiggleStride              = 6
+	xbeeBaudRate                  = 9600
+	xbeeResetPulseMs        int64 = 5
+	xbeeBootDelayMs         int64 = 50
+	xbeeBlinkLEDOnTx              = true
+	xbeeBlinkDurationMs     int64 = 15
 )
 
-var displayResetPin machine.Pin = machine.D03
+var (
+	displayResetPin machine.Pin = machine.D03
+	xbeeTxPin       machine.Pin = machine.D10
+	xbeeRxPin       machine.Pin = machine.D09
+	xbeeResetPin    machine.Pin = machine.NoPin
+	xbeeSleepPin    machine.Pin = machine.NoPin
+	xbeeUART                    = machine.TeensyUART2
+)
