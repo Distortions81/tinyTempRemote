@@ -53,27 +53,36 @@ func main() {
 	for {
 		now := millis()
 
-		for xbee != nil {
-			line, ok := xbee.PollLine()
-			if !ok {
-				break
+			for xbee != nil {
+				line, ok := xbee.PollLine()
+				if !ok {
+					break
+				}
+				tempF, _, valid := parseTelemetryLine(line)
+				if !valid || len(tempF) == 0 {
+					if len(line) > 0 {
+						hasTelemetry = true
+						displayText = "FF"
+						lastTelemetryMs = millis()
+						textPos = clampOffsetX(textPos, displayText)
+						if xbeeBlinkLEDOnRx && xbeeBlinkDurationMs > 0 {
+							blinkOnce(led, xbeeBlinkDurationMs)
+						}
+					}
+					continue
+				}
+				if !hasTelemetry {
+					textPos = randomOffset(rng, tempF)
+				}
+				displayText = tempF
+				hasTelemetry = true
+				lastTelemetryMs = millis()
+				jiggleCounter = 0
+				textPos = clampOffsetX(textPos, displayText)
+				if xbeeBlinkLEDOnRx && xbeeBlinkDurationMs > 0 {
+					blinkOnce(led, xbeeBlinkDurationMs)
+				}
 			}
-			tempF, _, valid := parseTelemetryLine(line)
-			if !valid || len(tempF) == 0 {
-				continue
-			}
-			if !hasTelemetry {
-				textPos = randomOffset(rng, tempF)
-			}
-			displayText = tempF
-			hasTelemetry = true
-			lastTelemetryMs = millis()
-			jiggleCounter = 0
-			textPos = clampOffsetX(textPos, displayText)
-			if xbeeBlinkLEDOnRx && xbeeBlinkDurationMs > 0 {
-				blinkOnce(led, xbeeBlinkDurationMs)
-			}
-		}
 
 		if hasTelemetry && telemetryStaleTimeoutMs > 0 && now-lastTelemetryMs >= telemetryStaleTimeoutMs {
 			hasTelemetry = false

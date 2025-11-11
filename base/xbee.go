@@ -49,11 +49,13 @@ func (x *xbeeRadio) PollLine() (string, bool) {
 		return "", false
 	}
 
+	activity := false
 	for x.uart.Buffered() > 0 {
 		b, err := x.uart.ReadByte()
 		if err != nil {
 			break
 		}
+		activity = true
 		switch b {
 		case '\n':
 			if x.lineLen == 0 {
@@ -72,6 +74,9 @@ func (x *xbeeRadio) PollLine() (string, bool) {
 			x.lineBuf[x.lineLen] = b
 			x.lineLen++
 		}
+	}
+	if activity && xbeeBlinkDurationMs > 0 {
+		blinkOnce(machine.LED, xbeeBlinkDurationMs)
 	}
 	return "", false
 }
