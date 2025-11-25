@@ -1,0 +1,18 @@
+{
+  "openweather_api_key": "9023be2468dbdb5e93168813b3b8b05c",
+  "latitude": 41.139981,
+  "longitude": -104.820246,
+  "units": "imperial",
+  "time_format": "12h",
+  "location_name": "Cheyenne, Wyoming, US",
+  "theme": "dark_colorful",
+  "show_seconds": false,
+  "show_location_name": false,
+  "detail_high_low": "both",
+  "detail_wind_speed": "both",
+  "detail_wind_direction": "both",
+  "detail_humidity": "both",
+  "detail_dew_point": "none",
+  "detail_pressure": "none",
+  "detail_precip_chance": "both"
+}
