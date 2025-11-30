@@ -42,9 +42,13 @@ func debugPrintHex(val uint8) {
 	debugSerial.Write(hex[:])
 }
 
-func debugPrintFloat(val float64) {
+func debugPrintBool(val bool) {
 	initDebugSerial()
-	debugSerial.Write([]byte(formatTempValue(val)))
+	if val {
+		debugSerial.Write([]byte("true"))
+	} else {
+		debugSerial.Write([]byte("false"))
+	}
 }
 
 func formatInt(val int) string {

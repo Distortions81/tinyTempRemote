@@ -11,3 +11,4 @@ fi
 echo "Building and flashing firmware to nice!nano..."
 
 tinygo flash -target=nicenano $DEBUG .
+screen /dev/ttyACM0 115200
