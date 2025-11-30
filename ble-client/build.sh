@@ -24,6 +24,8 @@ if tinygo flash -target=nicenano $DEBUG .; then
         echo "Opening serial port with minicom..."
         echo "(Exit with Ctrl+A, then X)"
 
+		sleep 3
+
         # Automatically configure minicom for this session
         minicom -D "$PORT" -b "$BAUD"
     fi
