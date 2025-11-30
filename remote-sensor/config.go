@@ -4,7 +4,7 @@ import "machine"
 
 const (
 	mcp9808Addr                   = 0x18
-	randomSeedPin                 = machine.D23
+	randomSeedPin                 = machine.P0_31 // Using analog pin P0_31 for random seed
 	i2cBitBangFreqHz              = 400_000
 	charHeight                    = 18
 	offsetIntervalMs        int64 = 10_000
@@ -31,10 +31,10 @@ const (
 )
 
 var (
-	displayResetPin machine.Pin = machine.D03
-	xbeeTxPin       machine.Pin = machine.D10
-	xbeeRxPin       machine.Pin = machine.D09
+	displayResetPin machine.Pin = machine.P0_02  // Display reset pin (analog pin P0_02)
+	xbeeTxPin       machine.Pin = machine.P0_08  // UART TX (P0_08)
+	xbeeRxPin       machine.Pin = machine.P0_06  // UART RX (P0_06)
 	xbeeResetPin    machine.Pin = machine.NoPin
 	xbeeSleepPin    machine.Pin = machine.NoPin
-	xbeeUART                    = machine.TeensyUART2
+	xbeeUART                    = machine.UART0  // nice!nano UART0
 )

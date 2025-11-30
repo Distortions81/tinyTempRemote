@@ -7,10 +7,11 @@ import (
 )
 
 func main() {
-	bitBang := &SoftI2C{SDA: machine.D18, SCL: machine.D19}
-	bitBang.Configure(i2cBitBangFreqHz)
-
-	i2c := &softI2CBus{bus: bitBang}
+	// Using nice!nano hardware I2C0: SDA=P0_17, SCL=P0_20
+	i2c := machine.I2C0
+	i2c.Configure(machine.I2CConfig{
+		Frequency: i2cBitBangFreqHz,
+	})
 
 	led := machine.LED
 	led.Configure(machine.PinConfig{Mode: machine.PinOutput})

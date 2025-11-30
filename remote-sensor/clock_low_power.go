@@ -1,32 +1,22 @@
 package main
 
-import (
-	"device/nxp"
-)
+// Clock management for nRF52840
+// The nRF52840 has a simpler clock architecture than NXP Kinetis chips
 
-// forceLowSpeedClock reduces the core clocking by switching to the internal FLL and
-// turning off the PLL path. TinyGo expects the core to keep running, so we leave
-// the FLL/IRC enabled but disable the PLL and slow the dividers.
+// forceLowSpeedClock reduces power consumption by lowering the clock speed.
+// On nRF52840, the clock system is managed by the CLOCK peripheral and uses
+// a high-frequency crystal oscillator (HFXO) or internal RC oscillator (HFINT).
+//
+// Unlike the NXP Kinetis chips with their complex PLL and FLL configuration,
+// nRF52840 clock management is simpler and mostly automatic in TinyGo.
 func forceLowSpeedClock() {
-	// widen dividers before changing the clock source to avoid brief overdrive.
-	nxp.SIM.SetCLKDIV1_OUTDIV1(7)
-	nxp.SIM.SetCLKDIV1_OUTDIV2(7)
-	nxp.SIM.SetCLKDIV1_OUTDIV3(7)
-	nxp.SIM.SetCLKDIV1_OUTDIV4(7)
-
-	// Select the internal reference clock (FEI) as the core clock source.
-	nxp.MCG.SetC1_IREFSTEN(0)
-	nxp.MCG.SetC1_FRDIV(0)
-	nxp.MCG.SetC1_CLKS(0) // FLL engaged internal reference
-
-	// Disable PLL output.
-	nxp.MCG.SetC5_PLLCLKEN(0)
-	nxp.MCG.SetC5_PLLSTEN(0)
-	nxp.MCG.SetC6_PLLS(0)
-
-	// disable clock monitor if enabled.
-	nxp.MCG.SetC6_CME0(0)
-
-	// Gate down USB clock (redundant if already done) and leave other buses off in sleep.
-	nxp.SIM.SetSCGC4_USBOTG(0)
+	// For nRF52840, clock speed reduction is not as critical for power savings
+	// as it is on NXP chips. The main power savings come from sleep modes (WFI/WFE).
+	//
+	// If you need to reduce power consumption, consider:
+	// 1. Using the low-frequency clock for timers when possible
+	// 2. Putting the CPU to sleep (handled by sleepIdle)
+	// 3. Disabling unused peripherals
+	//
+	// For now, this is a no-op to maintain API compatibility with the original code.
 }

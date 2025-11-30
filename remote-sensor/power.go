@@ -1,6 +1,7 @@
 package main
 
-import "device/nxp"
+// Power management for nRF52840
+// The nRF52840 uses ARM Cortex-M4 with different power modes than NXP Kinetis
 
 const (
 	lowPowerModeDisabled = iota
@@ -9,15 +10,14 @@ const (
 )
 
 func init() {
-	if idleLowPowerMode != lowPowerModeDisabled {
-		// Allow Very-Low-Power modes; this register is write-once after reset.
-		nxp.SMC.SetPMPROT_AVLP(1)
-	}
-	disableUSBClock()
+	// nRF52840 initialization
+	// Power management is simpler on nRF52840 - it uses ARM's WFI/WFE instructions
+	// No special initialization needed like the NXP Kinetis chips
 }
 
 func disableUSBClock() {
-	nxp.SIM.SetSCGC4_USBOTG(0)
+	// nRF52840 USB clock management is handled automatically
+	// No manual clock gating needed
 }
 
 func sleepIdle(ms int64) {
@@ -35,27 +35,10 @@ func sleepIdle(ms int64) {
 }
 
 func enterIdleLowPowerMode() func() {
-	var stopMode uint8
-	switch idleLowPowerMode {
-	case lowPowerModeStop:
-		stopMode = 0x0
-	case lowPowerModeVLPS:
-		stopMode = 0x2
-	default:
-		return func() {}
-	}
+	// For nRF52840, low power mode is achieved through WFI (Wait For Interrupt)
+	// This is automatically handled by TinyGo's time.Sleep implementation
+	// No special register configuration needed like NXP chips
 
-	prevStop := nxp.SMC.GetPMCTRL_STOPM()
-	if prevStop != stopMode {
-		nxp.SMC.SetPMCTRL_STOPM(stopMode)
-	}
-
-	nxp.SystemControl.SetSCR_SLEEPDEEP(1)
-
-	return func() {
-		if prevStop != stopMode {
-			nxp.SMC.SetPMCTRL_STOPM(prevStop)
-		}
-		nxp.SystemControl.SetSCR_SLEEPDEEP(0)
-	}
+	// Return a no-op restore function
+	return func() {}
 }
