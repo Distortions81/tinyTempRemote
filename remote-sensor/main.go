@@ -7,7 +7,10 @@ import (
 )
 
 func main() {
+	debugPrintln("=== Remote Sensor Starting ===")
+
 	// Using nice!nano hardware I2C0: SDA=P0_17, SCL=P0_20
+	debugPrintln("Configuring I2C...")
 	i2c := machine.I2C0
 	i2c.Configure(machine.I2CConfig{
 		Frequency: i2cBitBangFreqHz,
@@ -16,10 +19,14 @@ func main() {
 	led := machine.LED
 	led.Configure(machine.PinConfig{Mode: machine.PinOutput})
 
+	debugPrintln("Initializing sensor...")
 	sensor, ok := newSensor(i2c)
 	if !ok {
+		debugPrintln("ERROR: Sensor initialization failed")
 		sensor = nil
 		blinkError(led)
+	} else {
+		debugPrintln("Sensor initialized successfully")
 	}
 
 	reinitSensor := func() {
@@ -47,6 +54,7 @@ func main() {
 	)
 
 	if enableOLED {
+		debugPrintln("Initializing OLED display...")
 		resetDisplay(displayResetPin)
 		display = ssd1306.NewI2C(i2c)
 
@@ -67,9 +75,21 @@ func main() {
 		textPos = randomOffset(rng, constFiller)
 		lastOffsetMs = millis()
 		noDataPos = textOffset{x: 16, y: 20}
+		debugPrintln("OLED display initialized")
+	} else {
+		debugPrintln("OLED display disabled")
 	}
 
+	debugPrintln("Initializing BLE...")
 	ble := newBLERadio()
+	if ble != nil {
+		debugPrintln("BLE initialized and advertising")
+	} else {
+		debugPrintln("BLE disabled or failed to initialize")
+	}
+
+	debugPrintln("Entering main loop...")
+	debugPrintln("")
 
 	var (
 		testTxTempC  = testTxStartTempC
@@ -107,8 +127,13 @@ func main() {
 				tempF := tempC*9/5 + 32
 
 				tempText = formatTemp(tempF)
+				debugPrint("Temp: ")
+				debugPrint(tempText)
+				debugPrintln("")
+
 				if ble != nil {
 					ble.SendTelemetry(tempC)
+					debugPrintln("  -> Sent via BLE")
 					if bleBlinkLEDOnTx && bleBlinkDurationMs > 0 {
 						blinkOnce(led, bleBlinkDurationMs)
 					}

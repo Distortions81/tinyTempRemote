@@ -7,7 +7,10 @@ import (
 )
 
 func main() {
+	debugPrintln("=== BLE Display Client Starting ===")
+
 	// Using nice!nano hardware I2C0: SDA=P0_17, SCL=P0_20
+	debugPrintln("Configuring I2C...")
 	i2c := machine.I2C0
 	i2c.Configure(machine.I2CConfig{
 		Frequency: i2cFreqHz,
@@ -31,6 +34,7 @@ func main() {
 	)
 
 	if enableOLED {
+		debugPrintln("Initializing OLED display...")
 		resetDisplay(displayResetPin)
 		display = ssd1306.NewI2C(i2c)
 
@@ -51,10 +55,24 @@ func main() {
 		textPos = randomOffset(rng, constFiller)
 		lastOffsetMs = millis()
 		noDataPos = textOffset{x: 16, y: 20}
+		debugPrintln("OLED display initialized")
+	} else {
+		debugPrintln("OLED display disabled")
 	}
 
 	// Initialize BLE client to receive temperature data
+	debugPrintln("Initializing BLE client...")
+	debugPrint("Looking for sensor: ")
+	debugPrintln(remoteSensorName)
 	bleClient := newBLEClient()
+	if bleClient != nil {
+		debugPrintln("BLE client initialized")
+	} else {
+		debugPrintln("BLE disabled or failed to initialize")
+	}
+
+	debugPrintln("Entering main loop...")
+	debugPrintln("")
 
 	for {
 		now := millis()
@@ -67,6 +85,9 @@ func main() {
 		if bleClient != nil && bleClient.HasUpdate() {
 			tempText = bleClient.GetLatestTemp()
 			bleClient.ClearUpdate()
+
+			debugPrint("Received temp: ")
+			debugPrintln(tempText)
 
 			if bleBlinkLEDOnRx && bleBlinkDurationMs > 0 {
 				blinkOnce(led, bleBlinkDurationMs)

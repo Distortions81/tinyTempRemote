@@ -1,7 +1,20 @@
 #!/bin/bash
 
 # Favor minimal firmware size per https://tinygo.org/docs/guides/optimizing-binaries/
-if [ "$1" = "flash" ]; then
+
+# Parse arguments
+ACTION="$1"
+DEBUG=""
+
+if [ "$1" = "debug" ] || [ "$2" = "debug" ]; then
+	DEBUG="-tags=debug"
+	if [ "$1" = "debug" ]; then
+		ACTION="$2"
+	fi
+	echo "Building with DEBUG enabled (serial logging active)"
+fi
+
+if [ "$ACTION" = "flash" ]; then
 	# Build the firmware first
 	echo "Building firmware..."
 	tinygo build \
@@ -10,6 +23,7 @@ if [ "$1" = "flash" ]; then
 		-panic=trap \
 		-scheduler=none \
 		-gc=leaking \
+		$DEBUG \
 		-o firmware.uf2 . || exit 1
 
 	echo "Triggering bootloader mode..."
@@ -76,9 +90,15 @@ else
 		-panic=trap \
 		-scheduler=none \
 		-gc=leaking \
+		$DEBUG \
 		-size short \
 		-o firmware.uf2 . &&
 	ls -lh firmware.uf2 &&
 	echo "" &&
-	echo "To flash: Double-tap reset button, then copy firmware.uf2 to NICENANO drive"
+	if [ -n "$DEBUG" ]; then
+		echo "Debug build created. Connect via serial monitor to see debug output:"
+		echo "  tinygo monitor"
+	else
+		echo "To flash: Double-tap reset button, then copy firmware.uf2 to NICENANO drive"
+	fi
 fi

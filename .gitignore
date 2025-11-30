@@ -2,3 +2,4 @@ firmware.hex
 firmware-test.hex
 piWeather/piWeather
 piWeather/config.json
+firmware.uf2
