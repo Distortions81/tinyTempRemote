@@ -17,11 +17,10 @@ const (
 	idleLowPowerMode              = lowPowerModeVLPS
 	idleLowPowerMinMs       int64 = 250
 	textJiggleStride              = 6
-	xbeeBaudRate                  = 9600
-	xbeeResetPulseMs        int64 = 5
-	xbeeBootDelayMs         int64 = 50
-	xbeeBlinkLEDOnTx              = true
-	xbeeBlinkDurationMs     int64 = 100
+	bleEnabled                    = true
+	bleDeviceName                 = "TempSensor"
+	bleBlinkLEDOnTx               = true
+	bleBlinkDurationMs      int64 = 100
 	enableOLED                    = false
 	testTxModeEnabled             = false
 	testTxIntervalMs        int64 = 1000
@@ -31,10 +30,5 @@ const (
 )
 
 var (
-	displayResetPin machine.Pin = machine.P0_02  // Display reset pin (analog pin P0_02)
-	xbeeTxPin       machine.Pin = machine.P0_08  // UART TX (P0_08)
-	xbeeRxPin       machine.Pin = machine.P0_06  // UART RX (P0_06)
-	xbeeResetPin    machine.Pin = machine.NoPin
-	xbeeSleepPin    machine.Pin = machine.NoPin
-	xbeeUART                    = machine.UART0  // nice!nano UART0
+	displayResetPin machine.Pin = machine.P0_02 // Display reset pin (analog pin P0_02)
 )

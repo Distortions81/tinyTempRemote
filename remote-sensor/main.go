@@ -69,7 +69,7 @@ func main() {
 		noDataPos = textOffset{x: 16, y: 20}
 	}
 
-	xbee := newXBeeRadio()
+	ble := newBLERadio()
 
 	var (
 		testTxTempC  = testTxStartTempC
@@ -89,10 +89,10 @@ func main() {
 			if now-lastTestTxMs >= testTxIntervalMs {
 				tempF := testTxTempC*9/5 + 32
 				tempText = formatTemp(tempF)
-				if xbee != nil {
-					xbee.SendTelemetry(testTxTempC)
-					if xbeeBlinkLEDOnTx && xbeeBlinkDurationMs > 0 {
-						blinkOnce(led, xbeeBlinkDurationMs)
+				if ble != nil {
+					ble.SendTelemetry(testTxTempC)
+					if bleBlinkLEDOnTx && bleBlinkDurationMs > 0 {
+						blinkOnce(led, bleBlinkDurationMs)
 					}
 				}
 				lastTestTxMs = now
@@ -107,10 +107,10 @@ func main() {
 				tempF := tempC*9/5 + 32
 
 				tempText = formatTemp(tempF)
-				if xbee != nil {
-					xbee.SendTelemetry(tempC)
-					if xbeeBlinkLEDOnTx && xbeeBlinkDurationMs > 0 {
-						blinkOnce(led, xbeeBlinkDurationMs)
+				if ble != nil {
+					ble.SendTelemetry(tempC)
+					if bleBlinkLEDOnTx && bleBlinkDurationMs > 0 {
+						blinkOnce(led, bleBlinkDurationMs)
 					}
 				}
 				if display != nil {

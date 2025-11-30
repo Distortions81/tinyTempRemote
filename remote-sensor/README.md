@@ -1,23 +1,19 @@
 # Remote Sensor
 
-Temperature sensor firmware for the nice!nano (nRF52840) board with optional OLED display and XBee wireless telemetry.
+Temperature sensor firmware for the nice!nano (nRF52840) board with optional OLED display and Bluetooth Low Energy wireless telemetry.
 
 ## Hardware
 
 - **Board**: nice!nano (nRF52840-based)
 - **Temperature Sensor**: MCP9808 (I2C address 0x18)
 - **Display** (optional): SSD1306 OLED (128x32, I2C address 0x3C)
-- **Radio** (optional): XBee module for wireless telemetry
+- **Wireless**: Bluetooth Low Energy (BLE) for telemetry
 
 ## Pin Configuration
 
 ### I2C (Hardware I2C0)
 - **SDA**: P0_17
 - **SCL**: P0_20
-
-### UART (Hardware UART0)
-- **TX**: P0_08 (XBee RX)
-- **RX**: P0_06 (XBee TX)
 
 ### Other Pins
 - **LED**: P0_15 (built-in LED)
@@ -46,7 +42,7 @@ Edit [config.go](config.go) to customize:
 
 - **Display settings**: Enable/disable OLED, contrast, dimensions
 - **Sensor polling**: Adjust `sensorPollDelayMs` (default: 5000ms)
-- **XBee settings**: Baud rate, LED blink on transmit
+- **Bluetooth settings**: Device name (`bleDeviceName`), enable/disable BLE, LED blink on transmit
 - **Low power mode**: Configure `idleLowPowerMode`
 - **Test mode**: Enable `testTxModeEnabled` for testing without sensor
 
@@ -54,20 +50,21 @@ Edit [config.go](config.go) to customize:
 
 - **Temperature Sensing**: Reads temperature from MCP9808 sensor in Celsius, displays in Fahrenheit
 - **OLED Display**: Shows temperature with animated text positioning to prevent burn-in
-- **Wireless Telemetry**: Sends temperature data via XBee radio
+- **Bluetooth Low Energy**: Advertises as "TempSensor" for wireless connectivity (pairing support coming soon)
 - **Low Power Mode**: Optimized for battery operation using ARM WFI sleep modes
 - **Error Handling**: LED blink patterns indicate sensor errors
 
 ## Firmware Size
 
 Current build size:
-- **Flash**: ~12.8 KB
-- **RAM**: ~4.6 KB
+- **Flash**: ~13.3 KB
+- **RAM**: ~4.7 KB
 
 ## Dependencies
 
 - [TinyGo](https://tinygo.org/) compiler
 - [tinygo.org/x/drivers/ssd1306](https://pkg.go.dev/tinygo.org/x/drivers/ssd1306) - OLED display driver
+- [tinygo.org/x/bluetooth](https://pkg.go.dev/tinygo.org/x/bluetooth) - Bluetooth Low Energy stack
 
 ## Flashing
 
