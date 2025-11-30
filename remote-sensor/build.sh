@@ -11,4 +11,7 @@ fi
 echo "Building and flashing firmware to nice!nano..."
 
 tinygo flash -target=nicenano $DEBUG .
-screen /dev/ttyACM0 115200
+
+if [[ -n "${DEBUG+x}" ]]; then
+	screen /dev/ttyACM0 115200
+fi
